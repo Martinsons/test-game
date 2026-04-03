@@ -4,13 +4,12 @@ import dynamic from "next/dynamic";
 import { useCallback, useRef, useState } from "react";
 import {
   Place,
-  Difficulty,
-  DIFFICULTY_CONFIG,
-  getPlacesForDifficulty,
+  GameConfig,
+  getPlacesForConfig,
   calculateDistance,
   calculatePoints,
 } from "@/lib/places";
-import DifficultySelect from "@/components/DifficultySelect";
+import GameSetup from "@/components/GameSetup";
 import ResultCard from "@/components/ResultCard";
 import GameOver from "@/components/GameOver";
 import FloatingImagePanel from "@/components/FloatingImagePanel";
@@ -19,12 +18,19 @@ const GameMap = dynamic(() => import("@/components/GameMap"), { ssr: false });
 
 const ROUNDS = 10;
 
+const DIFFICULTY_LABELS: Record<GameConfig["difficulty"], string> = {
+  easy:   "🟢 Viegli",
+  medium: "🟡 Vidēji",
+  hard:   "🔴 Grūti",
+  all:    "🌈 Visi",
+};
+
 interface Props {
   places: Place[];
 }
 
 export default function GameClient({ places }: Props) {
-  const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+  const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [gamePlaces, setGamePlaces] = useState<Place[]>([]);
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
@@ -43,9 +49,9 @@ export default function GameClient({ places }: Props) {
   const gamePlacesRef = useRef(gamePlaces);
   gamePlacesRef.current = gamePlaces;
 
-  const handleStart = (diff: Difficulty) => {
-    setGamePlaces(getPlacesForDifficulty(places, diff, ROUNDS));
-    setDifficulty(diff);
+  const handleStart = (config: GameConfig) => {
+    setGamePlaces(getPlacesForConfig(places, config, ROUNDS));
+    setGameConfig(config);
     setRound(0);
     setScore(0);
     setShowResult(false);
@@ -81,7 +87,7 @@ export default function GameClient({ places }: Props) {
   };
 
   const handleRestart = () => {
-    setDifficulty(null);
+    setGameConfig(null);
     setGamePlaces([]);
     setRound(0);
     setScore(0);
@@ -91,14 +97,14 @@ export default function GameClient({ places }: Props) {
     setShowGameOver(false);
   };
 
-  if (!difficulty) {
-    return <DifficultySelect places={places} onSelect={handleStart} />;
+  if (!gameConfig) {
+    return <GameSetup places={places} onStart={handleStart} />;
   }
 
   const currentPlace = gamePlaces[round] ?? null;
   const totalRounds = gamePlaces.length;
-  const cfg = DIFFICULTY_CONFIG[difficulty];
-  const isExpert = difficulty === "expert";
+  const isPhotoMode = gameConfig.photoMode;
+  const modeLabel = `${DIFFICULTY_LABELS[gameConfig.difficulty]}${isPhotoMode ? " · 📷" : ""}`;
 
   return (
     <div className="flex flex-col h-screen bg-gray-950 text-white overflow-hidden">
@@ -106,7 +112,7 @@ export default function GameClient({ places }: Props) {
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-black text-red-400 tracking-tight">🇱🇻 Latvijas Karte</h1>
           <span className="text-sm text-gray-500 border border-gray-700 rounded-full px-2 py-0.5">
-            {cfg.emoji} {cfg.label}
+            {modeLabel}
           </span>
           <button
             onClick={handleRestart}
@@ -125,7 +131,7 @@ export default function GameClient({ places }: Props) {
         </div>
       </header>
 
-      {!isExpert && (
+      {!isPhotoMode && (
         <div className="bg-gray-900 border-b border-gray-800 text-center py-4 shrink-0">
           <p className="text-gray-500 text-xs uppercase tracking-widest mb-1">Kur atrodas...</p>
           <p className="text-3xl font-black text-white">{currentPlace?.name ?? "..."}</p>
@@ -143,7 +149,7 @@ export default function GameClient({ places }: Props) {
           disabled={showResult || showGameOver}
         />
 
-        {isExpert && currentPlace?.image && (
+        {isPhotoMode && currentPlace?.image && (
           <FloatingImagePanel key={currentPlace.name} imageUrl={currentPlace.image} />
         )}
 
@@ -151,11 +157,16 @@ export default function GameClient({ places }: Props) {
           visible={showResult}
           distance={distance}
           points={points}
-          placeName={isExpert ? (currentPlace?.name ?? "") : undefined}
+          placeName={isPhotoMode ? (currentPlace?.name ?? "") : undefined}
           isLastRound={round === totalRounds - 1}
           onNext={handleNext}
         />
-        <GameOver visible={showGameOver} score={score} difficulty={difficulty} onRestart={handleRestart} />
+        <GameOver
+          visible={showGameOver}
+          score={score}
+          modeLabel={modeLabel}
+          onRestart={handleRestart}
+        />
       </div>
     </div>
   );
