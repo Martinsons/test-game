@@ -1,5 +1,5 @@
-export type Category = "city" | "town" | "poi";
-export type Difficulty = "easy" | "medium" | "hard" | "expert";
+export type Category = "city" | "town" | "village" | "lake" | "poi";
+export type DifficultyLevel = "easy" | "medium" | "hard";
 
 export interface Place {
   name: string;
@@ -7,23 +7,23 @@ export interface Place {
   lng: number;
   hint: string;
   category: Category;
+  difficulty_level: DifficultyLevel;
   image?: string | null;
 }
 
-export const DIFFICULTY_CONFIG: Record<Difficulty, {
-  label: string;
-  description: string;
-  emoji: string;
-  filter: (p: Place) => boolean;
-}> = {
-  easy:   { label: "Viegli",   emoji: "🟢", description: "Tikai lielās pilsētas",       filter: p => p.category === "city" },
-  medium: { label: "Vidēji",   emoji: "🟡", description: "Pilsētas un mazpilsētas",      filter: p => p.category === "city" || p.category === "town" },
-  hard:   { label: "Grūti",    emoji: "🔴", description: "Visas vietas",                filter: () => true },
-  expert: { label: "Eksperts", emoji: "⚫", description: "Atpazīsti pēc foto!",         filter: p => p.category === "poi" && !!p.image },
-};
+export interface GameConfig {
+  categories: Category[];
+  difficulty: DifficultyLevel | "all";
+  photoMode: boolean;
+}
 
-export function getPlacesForDifficulty(places: Place[], difficulty: Difficulty, count: number): Place[] {
-  const pool = places.filter(DIFFICULTY_CONFIG[difficulty].filter);
+export function getPlacesForConfig(places: Place[], config: GameConfig, count: number): Place[] {
+  const pool = places.filter(p => {
+    if (!config.categories.includes(p.category)) return false;
+    if (config.difficulty !== "all" && p.difficulty_level !== config.difficulty) return false;
+    if (config.photoMode && !p.image) return false;
+    return true;
+  });
   return [...pool].sort(() => Math.random() - 0.5).slice(0, Math.min(count, pool.length));
 }
 
