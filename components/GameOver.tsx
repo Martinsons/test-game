@@ -2,17 +2,16 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 
-const ROUNDS = 10;
-
 interface Props {
   visible: boolean;
   score: number;
+  totalRounds: number;
   modeLabel: string;
   onRestart: () => void;
 }
 
-export default function GameOver({ visible, score, modeLabel, onRestart }: Props) {
-  const maxScore = ROUNDS * 1000;
+export default function GameOver({ visible, score, totalRounds, modeLabel, onRestart }: Props) {
+  const maxScore = totalRounds * 1000;
   const percentage = Math.round((score / maxScore) * 100);
 
   return (

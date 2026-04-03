@@ -164,6 +164,7 @@ export default function GameClient({ places }: Props) {
         <GameOver
           visible={showGameOver}
           score={score}
+          totalRounds={totalRounds}
           modeLabel={modeLabel}
           onRestart={handleRestart}
         />
