@@ -1,21 +1,19 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Difficulty, DIFFICULTY_CONFIG } from "@/lib/places";
 
 const ROUNDS = 10;
 
 interface Props {
   visible: boolean;
   score: number;
-  difficulty: Difficulty;
+  modeLabel: string;
   onRestart: () => void;
 }
 
-export default function GameOver({ visible, score, difficulty, onRestart }: Props) {
+export default function GameOver({ visible, score, modeLabel, onRestart }: Props) {
   const maxScore = ROUNDS * 1000;
   const percentage = Math.round((score / maxScore) * 100);
-  const cfg = DIFFICULTY_CONFIG[difficulty];
 
   return (
     <AnimatePresence>
@@ -34,7 +32,7 @@ export default function GameOver({ visible, score, difficulty, onRestart }: Prop
             className="text-center"
           >
             <div className="text-4xl font-black text-red-400 mb-1">Spēle beigusies!</div>
-            <div className="text-gray-500 mb-6">{cfg.emoji} {cfg.label} režīms</div>
+            <div className="text-gray-500 mb-6">{modeLabel}</div>
             <div className="text-7xl font-black text-white my-4">{score}</div>
             <div className="text-gray-400 text-lg mb-1">no {maxScore} iespējamiem punktiem</div>
             <div className="text-gray-500 text-sm mb-10">{percentage}% precizitāte</div>
