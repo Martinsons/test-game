@@ -92,7 +92,7 @@ export default function GameClient({ places }: Props) {
   };
 
   if (!difficulty) {
-    return <DifficultySelect onSelect={handleStart} />;
+    return <DifficultySelect places={places} onSelect={handleStart} />;
   }
 
   const currentPlace = gamePlaces[round] ?? null;

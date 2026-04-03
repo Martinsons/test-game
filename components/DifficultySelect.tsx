@@ -1,14 +1,15 @@
 "use client";
 
-import { Difficulty, DIFFICULTY_CONFIG, PLACES } from "@/lib/places";
+import { Place, Difficulty, DIFFICULTY_CONFIG } from "@/lib/places";
 
 interface Props {
+  places: Place[];
   onSelect: (difficulty: Difficulty) => void;
 }
 
 const ORDER: Difficulty[] = ["easy", "medium", "hard", "expert"];
 
-export default function DifficultySelect({ onSelect }: Props) {
+export default function DifficultySelect({ places, onSelect }: Props) {
   return (
     <div className="flex flex-col h-screen bg-gray-950 text-white items-center justify-center px-4">
       <h1 className="text-4xl font-black text-red-400 mb-2">🇱🇻 Latvijas Karte</h1>
@@ -17,7 +18,7 @@ export default function DifficultySelect({ onSelect }: Props) {
       <div className="grid grid-cols-2 gap-4 w-full max-w-lg">
         {ORDER.map((diff) => {
           const cfg = DIFFICULTY_CONFIG[diff];
-          const count = PLACES.filter(cfg.filter).length;
+          const count = places.filter(cfg.filter).length;
           return (
             <button
               key={diff}
